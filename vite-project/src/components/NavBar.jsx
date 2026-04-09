@@ -6,7 +6,7 @@ const NavBar = () => {
       <div className="max-w-6xl mx-auto flex justify-between items-center px-6 py-3">
         
         {/* Logo */}
-        <div className="text-2xl font-bold text-white tracking-wide cursor-pointer">
+        <div className="text-2xl font-bold from-violet-600 tracking-wide cursor-pointer">
           ✨ iTask
         </div>
 

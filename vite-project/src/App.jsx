@@ -11,49 +11,58 @@ const App = () => {
     setInput(e.target.value);
   };
 
-  const saveToLC = (todo) => {
-    localStorage.setItem("todos", JSON.stringify(todo));
+  const saveToLC = (todos) => {
+    localStorage.setItem("todos", JSON.stringify(todos));
   };
 
   const handleAdd = () => {
     if (input.trim().length < 1) return;
 
-    let id = Date.now();
+    const newTodo = {
+      id: Date.now(),
+      input: input.trim(),
+      isComplete: false,
+    };
 
-    setTodos([...todos, { id, input, isComplete: false }]);
+    setTodos((prev) => [...prev, newTodo]); // ✅ safer update
     setInput("");
   };
 
   const handleChecked = (id) => {
-    let newTodo = todos.map((item) =>
-      item.id === id
-        ? { ...item, isComplete: !item.isComplete }
-        : item
+    setTodos((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, isComplete: !item.isComplete }
+          : item
+      )
     );
-    setTodos(newTodo);
   };
 
   const handleEdit = (id) => {
-    let todoToEdit = todos.find((item) => item.id === id);
+    const todoToEdit = todos.find((item) => item.id === id);
+    if (!todoToEdit) return;
+
     setInput(todoToEdit.input);
-    setTodos(todos.filter((item) => item.id !== id));
+    setTodos((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleDelete = (id) => {
-    setTodos(todos.filter((item) => item.id !== id));
+    setTodos((prev) => prev.filter((item) => item.id !== id));
   };
 
   const clearAll = () => {
     setTodos([]);
   };
 
+  // ✅ Load from localStorage
   useEffect(() => {
-    let todoString = localStorage.getItem("todos");
+    const todoString = localStorage.getItem("todos");
     if (todoString) {
       setTodos(JSON.parse(todoString));
     }
   }, []);
 
+  // ✅ Save to localStorage (skip first render)
   useEffect(() => {
     if (isInitialLoad.current) {
       isInitialLoad.current = false;
@@ -68,10 +77,8 @@ const App = () => {
     <>
       <NavBar />
 
-      {/* Background */}
       <div className="min-h-screen bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 flex items-center justify-center p-4">
         
-        {/* Main Container */}
         <div className="w-full max-w-3xl backdrop-blur-lg bg-white/30 border border-white/20 shadow-xl rounded-2xl p-6">
 
           {/* Add Todo */}
@@ -87,6 +94,7 @@ const App = () => {
                 onChange={changeInput}
                 value={input}
                 placeholder="What needs to be done?"
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()} // ✅ UX improve
               />
               <button
                 className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:scale-105 transition-transform px-5 py-2 rounded-lg text-white font-semibold"
@@ -173,8 +181,8 @@ const App = () => {
                 </div>
               </div>
             ))}
-          </div>
 
+          </div>
         </div>
       </div>
     </>
