@@ -1,121 +1,184 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useEffect, useState, useRef } from "react";
+import "./App.css";
+import NavBar from "./components/NavBar";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [input, setInput] = useState("");
+  const [todos, setTodos] = useState([]);
+  const isInitialLoad = useRef(true);
+
+  const changeInput = (e) => {
+    setInput(e.target.value);
+  };
+
+  const saveToLC = (todo) => {
+    localStorage.setItem("todos", JSON.stringify(todo));
+  };
+
+  const handleAdd = () => {
+    if (input.trim().length < 1) return;
+
+    let id = Date.now();
+
+    setTodos([...todos, { id, input, isComplete: false }]);
+    setInput("");
+  };
+
+  const handleChecked = (id) => {
+    let newTodo = todos.map((item) =>
+      item.id === id
+        ? { ...item, isComplete: !item.isComplete }
+        : item
+    );
+    setTodos(newTodo);
+  };
+
+  const handleEdit = (id) => {
+    let todoToEdit = todos.find((item) => item.id === id);
+    setInput(todoToEdit.input);
+    setTodos(todos.filter((item) => item.id !== id));
+  };
+
+  const handleDelete = (id) => {
+    setTodos(todos.filter((item) => item.id !== id));
+  };
+
+  const clearAll = () => {
+    setTodos([]);
+  };
+
+  useEffect(() => {
+    let todoString = localStorage.getItem("todos");
+    if (todoString) {
+      setTodos(JSON.parse(todoString));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+    saveToLC(todos);
+  }, [todos]);
+
+  const completedCount = todos.filter((t) => t.isComplete).length;
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+      <NavBar />
+
+      {/* Background */}
+      <div className="min-h-screen bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 flex items-center justify-center p-4">
+        
+        {/* Main Container */}
+        <div className="w-full max-w-3xl backdrop-blur-lg bg-white/30 border border-white/20 shadow-xl rounded-2xl p-6">
+
+          {/* Add Todo */}
+          <div className="my-5">
+            <h1 className="text-xl font-bold mb-3 text-white">
+              ✨ Add Todo
+            </h1>
+
+            <div className="flex gap-3 items-center bg-white/70 p-3 rounded-xl shadow-inner">
+              <input
+                type="text"
+                className="flex-1 bg-transparent outline-none px-2 text-gray-800 placeholder-gray-500"
+                onChange={changeInput}
+                value={input}
+                placeholder="What needs to be done?"
+              />
+              <button
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:scale-105 transition-transform px-5 py-2 rounded-lg text-white font-semibold"
+                onClick={handleAdd}
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          {/* Header */}
+          <div className="flex justify-between items-center mb-3">
+            <h1 className="text-lg font-bold text-white">
+              Your Todos ({todos.length})
+            </h1>
+
+            {todos.length > 0 && (
+              <button
+                onClick={clearAll}
+                className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-lg text-white text-sm"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+
+          {/* Completed Count */}
+          <p className="text-sm text-white mb-4">
+            ✅ Completed: {completedCount}
           </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+          {/* Todo List */}
+          <div className="space-y-3">
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            {todos.length === 0 && (
+              <div className="text-center text-white py-10">
+                <p className="text-xl">📝 No tasks yet</p>
+                <p className="text-sm">
+                  Start by adding a new todo above
+                </p>
+              </div>
+            )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+            {todos.map((item, index) => (
+              <div
+                key={item.id}
+                className="bg-white/80 backdrop-blur-md rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-md hover:shadow-xl transition-all duration-300"
+              >
+                <div className="flex items-center gap-3">
+                  <p>{index + 1}</p>
+
+                  <input
+                    type="checkbox"
+                    checked={item.isComplete}
+                    onChange={() => handleChecked(item.id)}
+                    className="cursor-pointer"
+                  />
+
+                  <span
+                    className={`font-medium break-words ${
+                      item.isComplete
+                        ? "line-through text-gray-500"
+                        : ""
+                    }`}
+                  >
+                    {item.input}
+                  </span>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    className="bg-violet-700 hover:bg-violet-900 px-4 py-1 rounded-lg text-white font-semibold"
+                    onClick={() => handleEdit(item.id)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="bg-red-600 hover:bg-red-700 px-4 py-1 rounded-lg text-white font-semibold"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </div>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
